@@ -11,7 +11,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 
-from agent import llm, memory
+from agent import capacity, llm, memory
 from agent.logging_setup import get_logger
 from agent.router import RouterDecision
 from agent.tools import gmail
@@ -53,6 +53,17 @@ DRAFT_LEAD_REPLY_TOOL = {
                 "type": "string",
                 "description": "Body of the reply, in agency voice.",
             },
+            "client_name": {
+                "type": "string",
+                "description": (
+                    "The sender's company name. Used to seed our clients "
+                    "table so future emails route correctly. For policy 5, "
+                    "use the matched company name from CAPACITY context. "
+                    "For other policies, use the company stated in the email "
+                    "or inferred from the sender's domain. Required for all "
+                    "policies except 3 (low fit / decline)."
+                ),
+            },
             "should_alert_slack": {
                 "type": "boolean",
                 "description": "True only for policy 1 (high-value urgent).",
@@ -60,8 +71,9 @@ DRAFT_LEAD_REPLY_TOOL = {
             "capacity_update": {
                 "type": "object",
                 "description": (
-                    "What to do with the capacity sheet. Wired in step 6; "
-                    "the handler still records intent today."
+                    "What to do with the capacity sheet. Set action=add for "
+                    "policy 2 (standard build) when adding to the waitlist. "
+                    "Set action=none for policies 1, 3, 4, 5."
                 ),
                 "properties": {
                     "action": {"type": "string", "enum": ["add", "none"]},
@@ -69,6 +81,13 @@ DRAFT_LEAD_REPLY_TOOL = {
                         "type": "integer",
                         "minimum": 0,
                         "description": "Days of work if action=add; 0 otherwise.",
+                    },
+                    "project_name": {
+                        "type": "string",
+                        "description": (
+                            "Short project label for the sheet (only when "
+                            "action=add). 2-5 words, descriptive."
+                        ),
                     },
                 },
                 "required": ["action", "estimated_days"],
@@ -79,6 +98,7 @@ DRAFT_LEAD_REPLY_TOOL = {
             "reasoning",
             "draft_subject",
             "draft_body",
+            "client_name",
             "should_alert_slack",
             "capacity_update",
         ],
@@ -94,15 +114,54 @@ class HandlerResult:
     draft_body: str
 
 
-# Step 5: capacity is not wired yet. Step 6 replaces this with a real summary
-# from `agent/capacity.py`. Keeping the function tells the LLM what to expect
-# and means the prompt's "estimated X weeks" line still produces sensible text.
+def _infer_client_from_email(sender: str) -> str:
+    """Fallback when the LLM doesn't supply a client_name. Take the second-level
+    domain as a title-cased best guess (e.g. `bob@northwind-corp.com` →
+    `Northwind-Corp`). Returns 'Unknown' for malformed senders.
+    """
+    if "@" not in sender:
+        return "Unknown"
+    domain = sender.split("@", 1)[1]
+    root = domain.split(".")[0]
+    return root.title() or "Unknown"
+
+
 def _capacity_context() -> str:
-    return (
-        "CAPACITY CHECK: not yet wired in this build. For drafting, treat "
-        "the current waitlist as roughly 6-8 weeks. Use phrasing like "
-        "'estimated 6-8 weeks from acceptance' — never commit to specific dates."
+    """Real capacity summary from the Google Sheet.
+
+    Includes total load (Active + Waitlist days) and every existing entry so
+    the LLM can do company-name matching for policy 5 (already in queue).
+    On any sheet read failure, falls back to a safe placeholder so the
+    handler never crashes on transient Google API issues.
+    """
+    try:
+        rows = capacity.read_capacity()
+        load = capacity.current_load_days()
+        eta = capacity.get_eta("any")
+    except Exception as exc:
+        log.warning(f"capacity read failed: {exc}; using fallback context")
+        return (
+            "CAPACITY: sheet read failed. Treat the current waitlist as "
+            "roughly 6-8 weeks. Use phrasing like 'estimated 6-8 weeks from "
+            "acceptance' and never commit to specific dates."
+        )
+
+    lines = [
+        "CAPACITY:",
+        f"  current load: {load} days across Active + Waitlist ({eta})",
+        f"  entries in capacity sheet ({len(rows)}):",
+    ]
+    for r in rows:
+        lines.append(
+            f"    - project={r.get('Project')!r} client={r.get('Client')!r} "
+            f"status={r.get('Status')} days={r.get('Estimated Days')} "
+            f"queue_pos={r.get('Queue Position') or '-'}"
+        )
+    lines.append(
+        "  If the sender's company name appears above, prefer policy 5 "
+        "(already in queue) and surface their position + ETA."
     )
+    return "\n".join(lines)
 
 
 def _build_user_message(message: Message, decision: RouterDecision) -> str:
@@ -171,15 +230,46 @@ def run(message: Message, decision: RouterDecision) -> HandlerResult:
             f"{', '.join(violations)}"
         )
 
-    # Step 5: Slack and capacity sheet are not wired. Log the intents so the
-    # demo viewer can see they're being decided correctly.
+    # Resolve a single canonical client name for both seeding and capacity-add.
+    client_name = (out.get("client_name") or "").strip()
+    if not client_name:
+        client_name = _infer_client_from_email(message.sender)
+
+    # Seed the clients table for every non-decline policy. Policy 3 declines
+    # don't need a client record. Doing this for policies 1/2/4/5 means a
+    # follow-up email from the same company will route cleanly through the
+    # Router's domain match — closes the lead/client no-man's-land gap that
+    # otherwise affects policy 5 most acutely (no `add` to trigger seeding).
+    if policy in {"1", "2", "4", "5"}:
+        try:
+            memory.find_or_create_client(
+                email=message.sender, company=client_name
+            )
+        except Exception as exc:
+            log.warning(f"[LEAD] client record seeding failed: {exc}; continuing")
+
+    # Slack still placeholder until step 8.
     if should_alert:
         log.info("[LEAD] would send Slack alert (wiring lands in step 8)")
+
+    # Capacity sheet — append a Waitlist row when the LLM says add.
     if cap_update["action"] == "add":
-        log.info(
-            f"[LEAD] would add to capacity sheet ({cap_update['estimated_days']} days; "
-            f"wiring lands in step 6)"
-        )
+        days = int(cap_update.get("estimated_days") or 0)
+        project_name = (cap_update.get("project_name") or "").strip()
+        if not project_name:
+            project_name = "AI build (TBD)"
+        try:
+            queue_pos = capacity.add_to_waitlist(
+                client=client_name,
+                project=project_name,
+                estimated_days=days,
+            )
+            log.info(
+                f"[LEAD] added to waitlist: client={client_name!r} "
+                f"project={project_name!r} days={days} position={queue_pos}"
+            )
+        except Exception as exc:
+            log.warning(f"[LEAD] capacity update failed: {exc}; continuing")
 
     # Real Gmail draft.
     to_addr = message.reply_to or message.sender
