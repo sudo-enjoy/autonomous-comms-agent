@@ -1,0 +1,16 @@
+.env
+data/
+*.db
+gmail_token.json
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+.DS_Store
+.idea/
+.vscode/
+
+
+build.md
+work_status.md
