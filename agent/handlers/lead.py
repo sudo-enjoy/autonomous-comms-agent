@@ -12,6 +12,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from agent import capacity, llm, memory
+from agent.handlers import voice_violations
 from agent.logging_setup import get_logger
 from agent.router import RouterDecision
 from agent.tools import gmail
@@ -205,25 +206,7 @@ def run(message: Message, decision: RouterDecision) -> HandlerResult:
         f"capacity_action={cap_update['action']} | {reasoning}"
     )
 
-    # Voice rule violations recorded as data, not enforcement. By step 9 we
-    # want a per-policy violation map to know which policies leak which
-    # patterns most often. Fixing the prompt is step-9 work; observing now
-    # is free.
-    violations: list[str] = []
-    if "—" in draft_body:
-        violations.append("em-dash")
-    if "!" in draft_body:
-        violations.append("exclamation")
-    body_lower = draft_body.lower()
-    if any(
-        p in body_lower
-        for p in (
-            "hope this finds you well",
-            "hope you're well",
-            "i hope this email finds",
-        )
-    ):
-        violations.append("greeting-cliche")
+    violations = voice_violations(draft_body)
     if violations:
         log.warning(
             f"[LEAD] voice violations in policy={policy} draft: "
