@@ -4,7 +4,6 @@ version = "0.1.0"
 description = "Autonomous email triage agent for an AI dev agency at capacity."
 requires-python = ">=3.11"
 dependencies = [
-    "anthropic",
     "google-api-python-client",
     "google-auth-oauthlib",
     "google-auth",
