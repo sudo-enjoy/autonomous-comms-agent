@@ -9,10 +9,8 @@ Exit code: 0 if all fixtures pass, 1 otherwise.
 """
 from __future__ import annotations
 
-import contextlib
 import json
 import sys
-import unittest.mock as mock
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -25,27 +23,9 @@ from rich.console import Console  # noqa: E402
 from rich.table import Table  # noqa: E402
 
 from agent import memory, router  # noqa: E402
+from agent.dry_run import dry_run  # noqa: E402
 from agent.handlers import client, lead  # noqa: E402
 from agent.tools.gmail import Message  # noqa: E402
-
-
-@contextlib.contextmanager
-def dry_run():
-    """Mock every side-effect path so evals don't write to Gmail/Sheet/Slack/DB.
-
-    Memory reads (find clients by domain, etc.) still hit the real DB so the
-    Router's domain matching works against seeded contacts. Memory *writes*
-    (record_thread, record_draft, find_or_create_client) are mocked.
-    """
-    with mock.patch("agent.tools.gmail.create_draft", return_value="eval-draft-id"), \
-         mock.patch("agent.tools.gmail.get_thread", return_value=[]), \
-         mock.patch("agent.tools.slack.send_alert"), \
-         mock.patch("agent.capacity.add_to_waitlist", return_value=99), \
-         mock.patch("agent.memory.find_or_create_client", return_value=999), \
-         mock.patch("agent.memory.record_thread", return_value=999), \
-         mock.patch("agent.memory.record_draft", return_value=999), \
-         mock.patch("agent.memory.get_voice_samples", return_value=[]):
-        yield
 
 
 def run_fixture(fix: dict) -> dict:
