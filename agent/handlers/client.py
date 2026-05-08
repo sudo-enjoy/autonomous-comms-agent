@@ -15,7 +15,7 @@ from agent import capacity, llm, memory
 from agent.handlers import voice_violations
 from agent.logging_setup import get_logger
 from agent.router import RouterDecision
-from agent.tools import gmail
+from agent.tools import gmail, slack
 from agent.tools.gmail import Message
 
 log = get_logger(__name__)
@@ -243,8 +243,17 @@ def run(message: Message, decision: RouterDecision) -> HandlerResult:
         )
         should_alert = expected_alert
 
+    # Slack alert for scope_change or blocker — needs human attention.
     if should_alert:
-        log.info("[CLIENT] would send Slack alert (wiring lands in step 8)")
+        slack.send_alert(
+            headline=f"Client {subclass.replace('_', ' ')}: {client_company}",
+            summary=(
+                f"*From:* {message.sender}\n"
+                f"*Subject:* {message.subject}\n"
+                f"*Why this needs attention:* {reasoning}"
+            ),
+            link=f"https://mail.google.com/mail/u/0/#inbox/{message.thread_id}",
+        )
 
     to_addr = message.reply_to or message.sender
     draft_id = gmail.create_draft(

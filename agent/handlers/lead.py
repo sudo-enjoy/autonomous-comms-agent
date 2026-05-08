@@ -15,7 +15,7 @@ from agent import capacity, llm, memory
 from agent.handlers import voice_violations
 from agent.logging_setup import get_logger
 from agent.router import RouterDecision
-from agent.tools import gmail
+from agent.tools import gmail, slack
 from agent.tools.gmail import Message
 
 log = get_logger(__name__)
@@ -231,9 +231,16 @@ def run(message: Message, decision: RouterDecision) -> HandlerResult:
         except Exception as exc:
             log.warning(f"[LEAD] client record seeding failed: {exc}; continuing")
 
-    # Slack still placeholder until step 8.
+    # Slack alert for policy 1 (high-value urgent).
     if should_alert:
-        log.info("[LEAD] would send Slack alert (wiring lands in step 8)")
+        slack.send_alert(
+            headline=f"High-value lead: {message.subject}",
+            summary=(
+                f"*From:* {message.sender}\n"
+                f"*Why this is high-value:* {reasoning}"
+            ),
+            link=f"https://mail.google.com/mail/u/0/#inbox/{message.thread_id}",
+        )
 
     # Capacity sheet — append a Waitlist row when the LLM says add.
     if cap_update["action"] == "add":
