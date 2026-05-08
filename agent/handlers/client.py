@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from agent import capacity, llm, memory
-from agent.handlers import voice_violations
+from agent.handlers import normalize_voice, voice_violations
 from agent.logging_setup import get_logger
 from agent.router import RouterDecision
 from agent.tools import gmail, slack
@@ -233,6 +233,8 @@ def run(message: Message, decision: RouterDecision) -> HandlerResult:
             f"[CLIENT] voice violations in subclass={subclass} draft: "
             f"{', '.join(violations)}"
         )
+    # Sanitize residual drift before anything user-visible.
+    draft_body = normalize_voice(draft_body)
 
     # Sanity: alert flag must align with subclass per spec.
     expected_alert = subclass in ALERT_SUBCLASSES

@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from agent import capacity, llm, memory
-from agent.handlers import voice_violations
+from agent.handlers import normalize_voice, voice_violations
 from agent.logging_setup import get_logger
 from agent.router import RouterDecision
 from agent.tools import gmail, slack
@@ -52,7 +52,11 @@ DRAFT_LEAD_REPLY_TOOL = {
             },
             "draft_body": {
                 "type": "string",
-                "description": "Body of the reply, in agency voice.",
+                "description": (
+                    "Body of the reply, in agency voice. Per agency style: "
+                    "no em-dashes (use periods or 'and'/'but'), no "
+                    "exclamation marks, no 'hope this finds you well'."
+                ),
             },
             "client_name": {
                 "type": "string",
@@ -212,6 +216,9 @@ def run(message: Message, decision: RouterDecision) -> HandlerResult:
             f"[LEAD] voice violations in policy={policy} draft: "
             f"{', '.join(violations)}"
         )
+    # Sanitize residual drift before anything user-visible. Violations were
+    # logged above from the raw output so the prompt-drift signal is preserved.
+    draft_body = normalize_voice(draft_body)
 
     # Resolve a single canonical client name for both seeding and capacity-add.
     client_name = (out.get("client_name") or "").strip()

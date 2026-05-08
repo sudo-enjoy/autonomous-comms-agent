@@ -1,1 +1,81 @@
-[]
+[
+  {
+    "name": "policy_1_helia_compliance",
+    "from": "cto@helia-defi.io",
+    "subject": "Urgent: AI agent for on-chain compliance triage",
+    "body": "Hi, CTO at Helia DeFi (Series B, ~120 employees). We have a hard regulatory deadline in 8 weeks: every on-chain transaction over $10k has to be triaged for sanctions risk and routed to a compliance reviewer with a draft assessment. Classic agent problem. Budget is $60-80k for a v1. We have working API access to our chain data and a compliance team ready to integrate. Are you taking on new urgent work this quarter? Happy to jump on a call this week.",
+    "expected_track": "lead",
+    "expected_policy": "1"
+  },
+  {
+    "name": "policy_1_quanta_bio_fda",
+    "from": "ceo@quanta-bio.io",
+    "subject": "Urgent: AI agent for clinical-trial protocol triage, 7-week FDA deadline",
+    "body": "Hi, CEO at Quanta Bio (Series A, biotech, 60 staff). Hard FDA submission window in 7 weeks. We have ~40 active clinical-trial protocols that each need to be triaged for adverse-event-pattern matching against our historical corpus, with a draft suitability assessment for the medical reviewer. Classic agent problem. Budget locked at $80-100k. Are you taking on urgent regulatory work this quarter?",
+    "expected_track": "lead",
+    "expected_policy": "1"
+  },
+  {
+    "name": "policy_2_chefnote_cs",
+    "from": "maya@chefnote.app",
+    "subject": "AI assistant for our customer success inbox",
+    "body": "We run ChefNote, a small SaaS for restaurant scheduling, ~600 paying accounts. Our CS team handles ~80 inbound emails a day: feature questions, billing edge cases, integration troubleshooting with our calendar API. We want to build an AI agent that drafts responses and surfaces the tricky ones for human review. Budget is around $20-25k for a v1. No hard deadline; ideally we'd be live in Q3. What is your availability?",
+    "expected_track": "lead",
+    "expected_policy": "2"
+  },
+  {
+    "name": "policy_2_canyon_ops",
+    "from": "founder@canyon-ops.io",
+    "subject": "AI agent for IT ticket triage",
+    "body": "Founder at Canyon Ops, mid-sized MSP (about 50 staff). Our help desk fields ~200 IT tickets a day. Want an AI agent that classifies each by urgency and category, drafts an initial response, and surfaces the unusual ones to humans. Budget around $20-26k. No hard deadline; we are aiming for Q3 to be live. What does your queue look like?",
+    "expected_track": "lead",
+    "expected_policy": "2"
+  },
+  {
+    "name": "policy_3_plumbing_wordpress",
+    "from": "hello@bobsplumbing.com",
+    "subject": "Need a new website for my business",
+    "body": "Hi there, I run a plumbing business in Sacramento and need a new website. I want a Wordpress site with photo gallery, contact form, and a Facebook feed. Budget is $2-3k. Can you help?",
+    "expected_track": "lead",
+    "expected_policy": "3"
+  },
+  {
+    "name": "policy_4_brightline_vague",
+    "from": "kira@brightline-creative.com",
+    "subject": "exploring AI options",
+    "body": "Hi! We are Brightline, a marketing agency in Portland (about 15 people). One of our clients keeps asking us about AI and we want to be ready with answers. Could we hop on a call to explore what is possible? We are open to ideas.",
+    "expected_track": "lead",
+    "expected_policy": "4"
+  },
+  {
+    "name": "client_status_aurora",
+    "from": "cto@aurora-fintech.io",
+    "subject": "quick status check on the compliance bot",
+    "body": "hey, just looping back on where we are with the compliance bot work. any movement on the start date? want to make sure my team is ready to kick off when it is our turn.",
+    "expected_track": "client",
+    "expected_subclass": "status_request"
+  },
+  {
+    "name": "client_status_pamphlet",
+    "from": "pm@pamphlet.co",
+    "subject": "Where are we on the agent build?",
+    "body": "Hi team, exec asked for an update on the AI agent project. Could you send a quick rundown of what's been done this sprint and what's next? Anything blocking?",
+    "expected_track": "client",
+    "expected_subclass": "status_request"
+  },
+  {
+    "name": "client_scope_change_lighthouse",
+    "from": "ops@lighthouse.health",
+    "subject": "adding HIPAA compliance to the triage agent",
+    "body": "we just got told by legal that the triage agent needs to be HIPAA compliant. that means BAA-covered stack, audit logs, the works. how does this affect timeline and what do you need from us?",
+    "expected_track": "client",
+    "expected_subclass": "scope_change"
+  },
+  {
+    "name": "ignore_newsletter",
+    "from": "digest@substack.com",
+    "subject": "Weekly digest: 7 essays on building things",
+    "body": "Welcome back to the weekly digest. This week we have essays on product strategy, infrastructure, and the craft of writing. Click any title to read. To unsubscribe, click the link at the bottom of this email.",
+    "expected_track": "ignore"
+  }
+]
