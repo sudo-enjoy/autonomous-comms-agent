@@ -1,0 +1,90 @@
+
+python -m agent.orchestrator
+[15:35:02] INFO     [ORCH] entering poll loop (every 60s); ctrl-c to stop                 
+[15:35:03] INFO     [POLL] 0 unread message(s) to process                                 
+[15:36:03] INFO     [POLL] 1 unread message(s) to process                                 
+           INFO     [INCOMING] from=j3h12@outlook.com subject='Urgent: AI agent for       
+                    compliance triage, 6-week deadline'                                   
+[15:36:09] INFO     [ROUTER] track=lead confidence=0.92 | New inbound inquiry from a CTO  
+                    with defined scope, budget, and timeline; sender is not a known       
+                    client.                                                               
+[15:36:19] INFO     [LEAD] policy=1 alert_slack=True capacity_action=none | FinPro's CTO  
+                    presents clear AI agent scope (compliance triage), a hard 6-week      
+                    regulatory deadline (real timeline pressure), and a $60-80k budget    
+                    well above the $20k threshold, meeting all four criteria for          
+                    high-value urgent.                                                    
+           INFO     [SLACK] alert posted: 'High-value lead: Urgent: AI agent for          
+                    compliance triage, 6-week deadline'                                   
+[15:36:20] INFO     [DONE] draft_id=r6286427623881652095 policy=1 subject='Re: Urgent: AI 
+                    agent for compliance triage, 6-week deadline'                         
+[15:37:20] INFO     [POLL] 0 unread message(s) to process                                 
+[15:38:21] INFO     [POLL] 1 unread message(s) to process                                 
+           INFO     [INCOMING] from=k6m17@outlook.com subject='AI agent for our customer  
+                    support inbox'                                                        
+[15:38:25] INFO     [ROUTER] track=lead confidence=0.90 | New inbound inquiry asking about
+                    building an AI agent with a stated budget; sender email differs from  
+                    the known client and outlook.com is a generic provider domain, so no  
+                    real client match.                                                    
+[15:38:35] INFO     [LEAD] policy=2 alert_slack=False capacity_action=add | Clear AI agent
+                    build request with a stated $20-25k budget and a concrete use case    
+                    (drafting customer support email responses), which fits our           
+                    wheelhouse, but no hard deadline and no urgency signal, so this is a  
+                    standard build rather than high-value urgent.                         
+[15:38:36] INFO     [CAPACITY] added to waitlist: client='<UNKNOWN>' project='Support     
+                    Inbox AI Agent' days=20 position=3                                    
+           INFO     [LEAD] added to waitlist: client='<UNKNOWN>' project='Support Inbox AI
+                    Agent' days=20 position=3                                             
+[15:38:37] INFO     [DONE] draft_id=r-8794528079907999887 policy=2 subject='Re: AI agent  
+                    for your customer support inbox'                                      
+[15:39:37] INFO     [POLL] 0 unread message(s) to process                                 
+[15:40:37] INFO     [POLL] 0 unread message(s) to process                                 
+[15:41:38] INFO     [POLL] 1 unread message(s) to process                                 
+           INFO     [INCOMING] from=j3h12@outlook.com subject='a couple of your questions'
+[15:41:42] INFO     [ROUTER] track=client confidence=0.92 | Sender email exactly matches  
+                    known client j3h12@outlook.com (FinPro), and message references an    
+                    ongoing technical discussion about their data corpus.                 
+[15:41:47] INFO     [CLIENT] subclass=smalltalk alert_slack=False voice_samples=0 | The   
+                    client is answering a prior technical question and proposing a lunch  
+                    meeting to walk through their data setup — this is logistics and      
+                    context-sharing, not a blocker, scope change, or formal status        
+                    request.                                                              
+           WARNING  [CLIENT] voice violations in subclass=smalltalk draft: em-dash        
+[15:41:48] INFO     [DONE] draft_id=r8754635928226508764 policy=smalltalk subject='Re: a  
+                    couple of your questions'                                             
+[15:42:48] INFO     [POLL] 0 unread message(s) to process                                 
+[15:43:48] INFO     [POLL] 0 unread message(s) to process                                 
+[15:44:49] INFO     [POLL] 1 unread message(s) to process                                 
+           INFO     [INCOMING] from=sudoenjoy@outlook.com subject='Need a Wordpress       
+                    website'                                                              
+[15:44:54] INFO     [ROUTER] track=lead confidence=0.90 | New inbound inquiry from an     
+                    unknown sender pitching a small WordPress project; outlook.com is a   
+                    generic email provider so domain match to existing clients is not     
+                    meaningful, and the sender email doesn't match any known client.      
+[15:45:01] INFO     [LEAD] policy=3 alert_slack=False capacity_action=none | The request  
+                    is for a WordPress website with a photo gallery for a plumbing        
+                    business, which is pure web design/development outside our AI and     
+                    automation wheelhouse, and the $2k budget is also well below our      
+                    minimum threshold.                                                    
+[15:45:02] INFO     [DONE] draft_id=r-367247824602892244 policy=3 subject='Re: Need a     
+                    Wordpress website'                                                    
+[15:46:02] INFO     [POLL] 0 unread message(s) to process                                 
+[15:47:02] INFO     [POLL] 0 unread message(s) to process                                 
+[15:48:02] INFO     [POLL] 0 unread message(s) to process                                 
+[15:49:02] INFO     [POLL] 0 unread message(s) to process                                 
+[15:50:03] INFO     [POLL] 1 unread message(s) to process                                 
+           INFO     [INCOMING] from=j3h12@outlook.com subject='one more thing'            
+[15:50:07] INFO     [ROUTER] track=client confidence=0.92 | Sender email exactly matches  
+                    known client j3h12@outlook.com (FinPro), and message is a follow-up   
+                    about scheduling a call.                                              
+[15:50:11] INFO     [CLIENT] subclass=smalltalk alert_slack=False voice_samples=0 | The   
+                    client is asking about scheduling availability for a call, which is a 
+                    logistics/scheduling question.                                        
+[15:50:12] INFO     [DONE] draft_id=r7312354273400506585 policy=smalltalk subject='Re: one
+                    more thing'                                                           
+[15:51:12] INFO     [POLL] 0 unread message(s) to process                                 
+[15:52:13] INFO     [POLL] 0 unread message(s) to process                                 
+[15:53:13] INFO     [POLL] 0 unread message(s) to process                                 
+[15:54:13] INFO     [POLL] 0 unread message(s) to process                                 
+[15:55:13] INFO     [POLL] 0 unread message(s) to process                                 
+[15:56:14] INFO     [POLL] 0 unread message(s) to process                                 
+[15:57:14] INFO     [POLL] 0 unread message(s) to process 

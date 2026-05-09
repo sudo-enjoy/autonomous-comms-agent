@@ -205,6 +205,21 @@ def run(message: Message, decision: RouterDecision) -> HandlerResult:
     should_alert = bool(out["should_alert_slack"])
     cap_update = out["capacity_update"]
 
+    # Spec-level invariant: only policy 2 adds to the capacity sheet.
+    # The model occasionally drifts on the action field (e.g. emits
+    # action=none for policy 2 with reasoning "they aren't on the sheet
+    # yet, so don't add" — backwards from spec intent). Force the rule.
+    expected_action = "add" if policy == "2" else "none"
+    if cap_update.get("action") != expected_action:
+        log.warning(
+            f"[LEAD] forcing capacity_action={expected_action} for policy={policy} "
+            f"(model emitted action={cap_update.get('action')!r})"
+        )
+        cap_update["action"] = expected_action
+        if expected_action == "add" and not cap_update.get("estimated_days"):
+            # Fallback estimate when we override and the model didn't supply one.
+            cap_update["estimated_days"] = 20
+
     log.info(
         f"[LEAD] policy={policy} alert_slack={should_alert} "
         f"capacity_action={cap_update['action']} | {reasoning}"
